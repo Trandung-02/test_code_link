@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { pickLocaleFromAcceptLanguage } from '@/i18n/accept-language'
+import { isLocale, LOCALE_COOKIE, LOCALE_HEADER, type Locale } from '@/i18n/types'
 
 // Danh sách bot và crawler phổ biến
 const BOT_REGEX = /bot|crawler|spider|crawling|scraper|fetcher|indexer|archiver|monitor|validator|checker|linter|analyzer|parser|extractor|harvester|collector|aggregator|facebookexternalhit|facebookcatalog|twitterbot|linkedinbot|slackbot|telegrambot|whatsapp|zalo|discord|googlebot|bingbot|yandexbot|baiduspider|sogou|exabot|mj12bot|dotbot|ahrefsbot|semrushbot|rogerbot|archive\.org_bot|ia_archiver|special_archiver|archive-crawler|curl|wget|python-requests|java\/|go-http-client|\.net|scrapy|beautifulsoup|mechanize|lxml|htmlunit|phantomjs|casperjs|selenium|chrome-headless|headlesschrome|puppeteer|playwright|webdriver/i
@@ -9,23 +11,30 @@ const HEADLESS_REGEX = /headless|phantomjs|casperjs|selenium|webdriver|chrome-he
 // Pattern suspicious user agents
 const SUSPICIOUS_REGEX = /python|java\/|go-http-client|\.net|curl|wget|httpie|postman|insomnia|rest-client/i
 
-export function middleware(req: NextRequest) {
-  const host = req.nextUrl.hostname
-  const isLocal =
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host === '[::1]'
+function resolveLocaleInMiddleware(req: NextRequest): Locale {
+  const c = req.cookies.get(LOCALE_COOKIE)?.value
+  if (isLocale(c)) return c
+  return pickLocaleFromAcceptLanguage(req.headers.get('accept-language'))
+}
 
-  // Dev / máy cục bộ: không áp rewrite "bot" → /metadata (tránh UA kiểu Electron trong Cursor,
-  // hoặc preview đặc biệt khiến trang / không giống landing mong đợi).
-  if (process.env.NODE_ENV === 'development' || isLocal) {
-    return NextResponse.next()
+function withRequestLocale(req: NextRequest, locale: Locale) {
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set(LOCALE_HEADER, locale)
+  return requestHeaders
+}
+
+function maybeSetLocaleCookie(res: NextResponse, req: NextRequest, pathname: string, locale: Locale) {
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api')) return
+  const existing = req.cookies.get(LOCALE_COOKIE)?.value
+  if (!isLocale(existing)) {
+    res.cookies.set(LOCALE_COOKIE, locale, { path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 365 })
   }
+}
 
+export function middleware(req: NextRequest) {
   const userAgent = req.headers.get('user-agent') || ''
   const acceptHeader = req.headers.get('accept') || ''
   const acceptLanguage = req.headers.get('accept-language') || ''
-  const referer = req.headers.get('referer') || ''
 
   const { pathname } = req.nextUrl
 
@@ -36,58 +45,53 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/metadata') ||
     pathname.includes('.')
   ) {
-    return NextResponse.next()
+    const locale = resolveLocaleInMiddleware(req)
+    const res = NextResponse.next({ request: { headers: withRequestLocale(req, locale) } })
+    maybeSetLocaleCookie(res, req, pathname, locale)
+    return res
   }
 
   // 🔍 Bot detection logic
   let isBot = false
 
-  // 1. Check user agent patterns
   if (BOT_REGEX.test(userAgent) || HEADLESS_REGEX.test(userAgent) || SUSPICIOUS_REGEX.test(userAgent)) {
     isBot = true
   }
 
-  // 2. Check for headless browser indicators
   if (userAgent.includes('Headless') || userAgent.includes('headless')) {
     isBot = true
   }
 
-  // 3. Check for automation tools
   if (userAgent.includes('Selenium') || userAgent.includes('WebDriver')) {
     isBot = true
   }
 
-  // 4. Suspicious headers pattern
   if (!acceptHeader || acceptHeader === '*/*') {
-    // Many bots don't send proper Accept headers
     if (SUSPICIOUS_REGEX.test(userAgent)) {
       isBot = true
     }
   }
 
-  // 5. Check for missing or suspicious Accept-Language
   if (!acceptLanguage && SUSPICIOUS_REGEX.test(userAgent)) {
     isBot = true
   }
 
-  // 6. Check for rapid successive requests (basic rate limiting hint)
-  // This would need session storage in production, but we can check headers
-  const forwarded = req.headers.get('x-forwarded-for') || ''
-  const realIp = req.headers.get('x-real-ip') || ''
+  const botLocale: Locale = 'en'
+  const humanLocale = resolveLocaleInMiddleware(req)
 
-  // ✅ Nếu là bot → rewrite mọi slug về /metadata
   if (isBot) {
     const url = req.nextUrl.clone()
     url.pathname = '/metadata'
-
-    return NextResponse.rewrite(url)
+    const res = NextResponse.rewrite(url, { request: { headers: withRequestLocale(req, botLocale) } })
+    maybeSetLocaleCookie(res, req, pathname, botLocale)
+    return res
   }
 
-  return NextResponse.next()
+  const res = NextResponse.next({ request: { headers: withRequestLocale(req, humanLocale) } })
+  maybeSetLocaleCookie(res, req, pathname, humanLocale)
+  return res
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next|api|favicon.ico|robots.txt|sitemap.xml).*)',
-  ],
+  matcher: ['/((?!_next|api|favicon.ico|robots.txt|sitemap.xml).*)'],
 }

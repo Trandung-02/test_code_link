@@ -17,7 +17,7 @@ import {
   useClipboard,
 } from '@chakra-ui/react'
 import { Br, Link } from '@saas-ui/react'
-import type { NextPage } from 'next'
+import type { Metadata, NextPage } from 'next'
 import Image from 'next/image'
 import {
   FiArrowRight,
@@ -57,7 +57,6 @@ import { Testimonial, Testimonials } from '#components/testimonials'
 import { Em } from '#components/typography'
 import faq from '#data/faq'
 import pricing from '#data/pricing'
-import { SITE_MAIN_MESSAGE } from '#data/site-message'
 import testimonials from '#data/testimonials'
 
 const Home: NextPage = () => {
@@ -90,14 +89,15 @@ const HeroSection: React.FC = () => {
             px="0"
             title={
               <FallInPlace>
-                <Em>{SITE_MAIN_MESSAGE}</Em>
+                Build beautiful
+                <Br /> software faster
               </FallInPlace>
             }
             description={
               <FallInPlace delay={0.4} fontWeight="medium">
-                {SITE_MAIN_MESSAGE}
-                <Br />
-                {SITE_MAIN_MESSAGE}
+                Saas UI is a <Em>React component library</Em>
+                <Br /> that doesn&apos;t get in your way and helps you <Br />{' '}
+                build intuitive SaaS products with speed.
               </FallInPlace>
             }
           >
@@ -108,11 +108,11 @@ const HeroSection: React.FC = () => {
 
               <ButtonGroup spacing={4} alignItems="center">
                 <ButtonLink colorScheme="primary" size="lg" href="#">
-                  Tiếp tục
+                  Sign Up
                 </ButtonLink>
                 <ButtonLink
                   size="lg"
-                  href="#"
+                  href="https://demo.saas-ui.dev"
                   variant="outline"
                   rightIcon={
                     <Icon
@@ -127,7 +127,7 @@ const HeroSection: React.FC = () => {
                     />
                   }
                 >
-                  Xem thêm
+                  View demo
                 </ButtonLink>
               </ButtonGroup>
             </FallInPlace>
@@ -147,7 +147,7 @@ const HeroSection: React.FC = () => {
                   src="/static/screenshots/list.png"
                   width={1200}
                   height={762}
-                  alt={SITE_MAIN_MESSAGE}
+                  alt="Screenshot of a ListPage in Saas UI Pro"
                   quality="75"
                   priority
                 />
@@ -165,30 +165,33 @@ const HeroSection: React.FC = () => {
         pt="20"
         features={[
           {
-            title: SITE_MAIN_MESSAGE,
+            title: 'Accessible',
             icon: FiSmile,
-            description: SITE_MAIN_MESSAGE,
+            description: 'All components strictly follow WAI-ARIA standards.',
             iconPosition: 'left',
             delay: 0.6,
           },
           {
-            title: SITE_MAIN_MESSAGE,
+            title: 'Themable',
             icon: FiSliders,
-            description: SITE_MAIN_MESSAGE,
+            description:
+              'Fully customize all components to your brand with theme support and style props.',
             iconPosition: 'left',
             delay: 0.8,
           },
           {
-            title: SITE_MAIN_MESSAGE,
+            title: 'Composable',
             icon: FiGrid,
-            description: SITE_MAIN_MESSAGE,
+            description:
+              'Compose components to fit your needs and mix them together to create new ones.',
             iconPosition: 'left',
             delay: 1,
           },
           {
-            title: SITE_MAIN_MESSAGE,
+            title: 'Productive',
             icon: FiThumbsUp,
-            description: SITE_MAIN_MESSAGE,
+            description:
+              'Designed to reduce boilerplate and fully typed, build your product at speed.',
             iconPosition: 'left',
             delay: 1.1,
           },
@@ -200,16 +203,17 @@ const HeroSection: React.FC = () => {
 }
 
 const HighlightsSection = () => {
-  const { onCopy, hasCopied } = useClipboard(SITE_MAIN_MESSAGE)
+  const { value, onCopy, hasCopied } = useClipboard('yarn add @saas-ui/react')
 
   return (
     <Highlights>
-      <HighlightsItem colSpan={[1, null, 2]} title={SITE_MAIN_MESSAGE}>
+      <HighlightsItem colSpan={[1, null, 2]} title="Core components">
         <VStack alignItems="flex-start" spacing="8">
           <Text color="muted" fontSize="xl">
-            <Em>{SITE_MAIN_MESSAGE}</Em>
-            <Br />
-            {SITE_MAIN_MESSAGE}
+            Get started for free with <Em>30+ open source components</Em>.
+            Including authentication screens with Clerk, Supabase and Magic.
+            Fully functional forms with React Hook Form. Data tables with React
+            Table.
           </Text>
 
           <Flex
@@ -225,12 +229,15 @@ const HighlightsSection = () => {
           >
             <Box>
               <Text color="yellow.400" display="inline">
-                {SITE_MAIN_MESSAGE}
+                yarn add
+              </Text>{' '}
+              <Text color="cyan.300" display="inline">
+                @saas-ui/react
               </Text>
             </Box>
             <IconButton
               icon={hasCopied ? <FiCheck /> : <FiCopy />}
-              aria-label="Sao chép nội dung"
+              aria-label="Copy install command"
               onClick={onCopy}
               variant="ghost"
               ms="4"
@@ -240,37 +247,61 @@ const HighlightsSection = () => {
           </Flex>
         </VStack>
       </HighlightsItem>
-      <HighlightsItem title={SITE_MAIN_MESSAGE}>
+      <HighlightsItem title="Solid foundations">
         <Text color="muted" fontSize="lg">
-          {SITE_MAIN_MESSAGE}
+          We don&apos;t like to re-invent the wheel, neither should you. We
+          selected the most productive and established tools in the scene and
+          build Saas UI on top of it.
         </Text>
       </HighlightsItem>
       <HighlightsTestimonialItem
-        name="Người dùng"
-        description={SITE_MAIN_MESSAGE}
+        name="Renata Alink"
+        description="Founder"
         avatar="/static/images/avatar.jpg"
         gradient={['pink.200', 'purple.500']}
       >
-        “{SITE_MAIN_MESSAGE}”
+        “Saas UI helped us set up a beautiful modern UI in no time. It saved us
+        hundreds of hours in development time and allowed us to focus on
+        business logic for our specific use-case from the start.”
       </HighlightsTestimonialItem>
-      <HighlightsItem colSpan={[1, null, 2]} title={SITE_MAIN_MESSAGE}>
+      <HighlightsItem
+        colSpan={[1, null, 2]}
+        title="Start your next idea two steps ahead"
+      >
         <Text color="muted" fontSize="lg">
-          {SITE_MAIN_MESSAGE}
+          We took care of all your basic frontend needs, so you can start
+          building functionality that makes your product unique.
         </Text>
         <Wrap mt="8">
-          {[SITE_MAIN_MESSAGE, SITE_MAIN_MESSAGE, SITE_MAIN_MESSAGE].map(
-            (value, idx) => (
-              <Tag
-                key={idx}
-                variant="subtle"
-                colorScheme="purple"
-                rounded="full"
-                px="3"
-              >
-                {value}
-              </Tag>
-            ),
-          )}
+          {[
+            'authentication',
+            'navigation',
+            'crud',
+            'settings',
+            'multi-tenancy',
+            'layouts',
+            'billing',
+            'a11y testing',
+            'server-side rendering',
+            'documentation',
+            'onboarding',
+            'storybooks',
+            'theming',
+            'upselling',
+            'unit testing',
+            'feature flags',
+            'responsiveness',
+          ].map((value) => (
+            <Tag
+              key={value}
+              variant="subtle"
+              colorScheme="purple"
+              rounded="full"
+              px="3"
+            >
+              {value}
+            </Tag>
+          ))}
         </Wrap>
       </HighlightsItem>
     </Highlights>
@@ -278,7 +309,6 @@ const HighlightsSection = () => {
 }
 
 const FeaturesSection = () => {
-  const inline = { variant: 'inline' as const }
   return (
     <Features
       id="features"
@@ -289,16 +319,16 @@ const FeaturesSection = () => {
           textAlign="left"
           as="p"
         >
-          {SITE_MAIN_MESSAGE}
-          <Br />
-          {SITE_MAIN_MESSAGE}
+          Not your standard
+          <Br /> dashboard template.
         </Heading>
       }
       description={
         <>
-          {SITE_MAIN_MESSAGE}
+          Saas UI Pro includes everything you need to build modern frontends.
           <Br />
-          {SITE_MAIN_MESSAGE}
+          Use it as a template for your next product or foundation for your
+          design system.
         </>
       }
       align="left"
@@ -306,63 +336,72 @@ const FeaturesSection = () => {
       iconSize={4}
       features={[
         {
-          title: SITE_MAIN_MESSAGE,
+          title: '#components.',
           icon: FiBox,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'All premium components are available on a private NPM registery, no more copy pasting and always up-to-date.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Starterkits.',
           icon: FiLock,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'Example apps in Next.JS, Electron. Including authentication, billing, example pages, everything you need to get started FAST.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Documentation.',
           icon: FiSearch,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'Extensively documented, including storybooks, best practices, use-cases and examples.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Onboarding.',
           icon: FiUserPlus,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'Add user onboarding flows, like tours, hints and inline documentation without breaking a sweat.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Feature flags.',
           icon: FiFlag,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            "Implement feature toggles for your billing plans with easy to use hooks. Connect Flagsmith, or other remote config services once you're ready.",
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Upselling.',
           icon: FiTrendingUp,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            '#components and hooks for upgrade flows designed to make upgrading inside your app frictionless.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Themes.',
           icon: FiToggleLeft,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'Includes multiple themes with darkmode support, always have the perfect starting point for your next project.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Generators.',
           icon: FiTerminal,
-          description: SITE_MAIN_MESSAGE,
-          ...inline,
+          description:
+            'Extend your design system while maintaininig code quality and consistency with built-in generators.',
+          variant: 'inline',
         },
         {
-          title: SITE_MAIN_MESSAGE,
+          title: 'Monorepo.',
           icon: FiCode,
           description: (
             <>
-              {SITE_MAIN_MESSAGE}{' '}
-              <Link href="#">{SITE_MAIN_MESSAGE}</Link>
+              All code is available as packages in a high-performance{' '}
+              <Link href="https://turborepo.com">Turborepo</Link>, you have full
+              control to modify and adjust it to your workflow.
             </>
           ),
-          ...inline,
+          variant: 'inline',
         },
       ]}
     />
@@ -404,7 +443,7 @@ const PricingSection = () => {
   return (
     <Pricing {...pricing}>
       <Text p="8" textAlign="center" color="muted">
-        {SITE_MAIN_MESSAGE}
+        VAT may be applicable depending on your location.
       </Text>
     </Pricing>
   )

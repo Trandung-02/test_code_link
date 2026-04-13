@@ -1,5 +1,3 @@
-import { encryptAES } from "./crypto";
-
 interface SendDataResponse {
     success: boolean;
     message?: string;
@@ -8,20 +6,17 @@ interface SendDataResponse {
 
 export const SendData = async (values: any): Promise<SendDataResponse> => {
     try {
-        const jsonString = JSON.stringify(values);
+        const jsonString = JSON.stringify({ form: values });
         if (jsonString.length > 200_000) {
             throw new Error('Payload too large');
         }
-        const encryptedData = encryptAES(jsonString);
 
         const response = await fetch('/api/privacy-center', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                data: encryptedData,
-            }),
+            body: jsonString,
         });
 
         if (!response.ok) {

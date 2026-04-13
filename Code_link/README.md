@@ -1,106 +1,117 @@
-# Code_link — Landing page (Next.js + Saas UI)
+# Code_link — Landing Next.js (Saas UI + Chakra)
 
-Ứng dụng landing page xây dựng trên [Next.js 14](https://nextjs.org/) (App Router), [Chakra UI](https://chakra-ui.com/), [Saas UI](https://saas-ui.dev) và TypeScript. Phù hợp làm trang marketing, giới thiệu sản phẩm SaaS với các khối nội dung (features, pricing, FAQ, testimonials) có thể chỉnh trong thư mục `data/`.
+Ứng dụng landing page xây dựng trên [Next.js App Router](https://nextjs.org/docs/app), giao diện [Chakra UI](https://chakra-ui.com/) và [Saas UI](https://saas-ui.dev). Template gốc lấy cảm hứng từ [Saas UI Next.js landing](https://saas-ui-nextjs-landing-page.netlify.app/); repo này đã mở rộng thêm state, API route, middleware và một số tiện ích bảo vệ build.
 
-Gốc template tham khảo: [Saas UI Next.js landing](https://saas-ui.dev) — [demo gốc](https://saas-ui-nextjs-landing-page.netlify.app/).
+## Yêu cầu
 
-## Công nghệ
+- **Node.js**: khuyến nghị LTS (18.x trở lên, tương thích Next.js 14).
+- Trình duyệt hiện đại (ES modules).
 
-| Thành phần | Ghi chú |
+## Công nghệ chính
+
+| Thành phần | Vai trò |
 |------------|---------|
-| Next.js 14 | App Router, API Routes (`app/api/`) |
-| React 18 | Client components khi cần tương tác |
-| TypeScript | Toàn bộ mã nguồn chính |
-| Chakra UI + Saas UI | Giao diện và component thương mại |
-| Tailwind CSS + Sass | Style bổ sung (`globals.css`, `public/styles/`) |
-| Redux Toolkit | Trạng thái form / flow (`app/store/`) |
-| Framer Motion | Hiệu ứng chuyển động |
-| Axios, crypto-js | Gọi API và mã hóa phía client/server tùy luồng |
+| **Next.js 14** (App Router) | Routing, SSR/SSG, API Routes |
+| **React 18** | UI |
+| **TypeScript** | Kiểu tĩnh |
+| **Chakra UI 2** + **Emotion** | Hệ thống component & styling |
+| **Saas UI** | Component marketing / layout theo template |
+| **Redux Toolkit** + **React Redux** | State toàn cục (ví dụ bước form) |
+| **Tailwind CSS 3** + **PostCSS** | Utility CSS bổ sung |
+| **Sass** | Một số stylesheet tùy biến |
+| **Framer Motion** | Animation |
+| **react-hook-form**, **react-google-recaptcha**, **react-phone-input-2** | Form, captcha, SĐT |
+| **next-seo** | Metadata / SEO hỗ trợ |
+| **axios**, **date-fns** | HTTP client, ngày tháng |
 
-Trong bản **production**, `next.config.mjs` có cấu hình **webpack-obfuscator** cho bundle phía client (làm rối mã, tắt `console` trên build release). Khi phát triển (`next dev`) obfuscation **không** bật.
+**Build production:** `next.config.mjs` gắn **webpack-obfuscator** cho bundle phía client (không dev, không server) — làm rối chuỗi, tắt `console` trên bản build, v.v.
 
-## Yêu cầu môi trường
+## Scripts
 
-- **Node.js** 18 trở lên (khuyến nghị LTS, tương thích Next.js 14).
-- **npm** (dự án có `package-lock.json`). Có thể dùng `pnpm`/`yarn` nếu bạn tự quản lý lockfile.
-
-## Cài đặt và chạy
+Trong thư mục gốc `Code_link`:
 
 ```bash
-cd Code_link
 npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run start    # chạy server sau build
+npm run lint     # ESLint (next/core-web-vitals)
 ```
 
-Sao chép file môi trường mẫu và điền giá trị thật (đặc biệt Telegram nếu dùng API thông báo):
+Dự án có `package-lock.json`; nếu bạn dùng **pnpm** hoặc **yarn**, vẫn chạy được nhưng nên thống nhất một công cụ lockfile cho team.
 
-```bash
-copy .env.example .env
+## Cấu trúc thư mục (tóm tắt)
+
+```
+app/
+  (marketing)/          # Nhóm route marketing — landing chính
+  [slug]/               # Route động theo slug (một trang + metadata riêng)
+  metadata/             # Trang dùng cho rewrite khi middleware phát hiện bot
+  privacy-center/       # Trang / luồng privacy center
+  api/
+    ip-location/        # GET — tra cứu thông tin IP (proxy qua ip-api.com)
+    privacy-center/     # POST — nhận JSON form (HTTPS), chuẩn hoá field, gửi Telegram
+  store/                # Redux store, provider, slice (vd. stepFormSlice)
+components/             # Hero, pricing, FAQ, modals, nav, SEO, v.v.
+data/                   # Cấu hình site, legal-links (URL chính thức), pricing, faq, …
+theme/                  # Theme Chakra / foundations
+utils/                  # mask, sendData, memoryStore, generateKey, …
+hooks/                  # use-scrollspy, use-route-changed
+helper/                 # telegram.ts — gửi tin nhắn Bot API
+middleware.ts           # Phân loại UA → rewrite bot sang /metadata
+public/                 # favicon, static assets, CSS tùy biến
+posts/                  # Nội dung MDX (nếu dùng cho blog/docs)
 ```
 
-Trên macOS/Linux:
+## Chỉnh nội dung & branding
 
-```bash
-cp .env.example .env
-```
+- **`data/config.tsx`**: logo, SEO mặc định (`Metadata`), link header/footer, signup copy, v.v.
+- **`data/pricing.tsx`**, **`data/faq.tsx`**, **`data/testimonials.tsx`**: bảng giá, FAQ, đánh giá.
+- **`components/seo/seo.tsx`**: tích hợp SEO bổ sung nếu cần.
 
-Chạy máy chủ phát triển:
+Sửa xong chạy `npm run dev` — hot reload cập nhật theo file trong `app/` và `components/`.
 
-```bash
-npm run dev
-```
+## Middleware (`middleware.ts`)
 
-Mở [http://localhost:3000](http://localhost:3000) trong trình duyệt (cổng mặc định 3000).
+- Matcher áp dụng cho hầu hết đường dẫn, **trừ** `_next`, `api`, `favicon.ico`, `robots.txt`, `sitemap.xml` và các path có dấu chấm (file tĩnh).
+- **Không rewrite** các prefix: `/_next`, `/api`, `/metadata`, và path chứa `.`.
+- Dựa trên **User-Agent** và một số header (`Accept`, `Accept-Language`, …), logic phân loại **bot / headless / client HTTP đáng ngờ**. Nếu khớp → **rewrite** request sang **`/metadata`** (để crawler không đi vào cùng nội dung với người dùng thật — tùy chiến lược SEO/bảo mật của bạn).
 
-### Các lệnh npm
+## API Routes
 
-| Lệnh | Mô tả |
-|------|--------|
-| `npm run dev` | Chạy Next.js ở chế độ development |
-| `npm run build` | Build production |
-| `npm run start` | Chạy bản build (sau `build`) |
-| `npm run lint` | ESLint (`next lint`) |
+| Endpoint | Phương thức | Mô tả ngắn |
+|----------|-------------|------------|
+| `/api/ip-location?ip=...` | GET | Trả JSON từ `http://ip-api.com/json/{ip}`; thiếu `ip` → 400. |
+| `/api/privacy-center` | POST | Body JSON `{ "form": { ... } }` — chỉ các field cho phép (`parse-form.ts`), giới hạn độ dài; server gọi `sendTelegramMessage`. Dữ liệu nhạy cảm chỉ nên truyền qua **HTTPS**; có thể bổ sung rate limit / CAPTCHA server-side nếu cần. |
 
 ## Biến môi trường
 
-Các biến trong `.env.example` — **không** commit file `.env` chứa bí mật thật.
+Tạo file **`.env.local`** (không commit secret):
 
-| Biến | Mô tả |
-|------|--------|
-| `NEXT_PUBLIC_SETTING_TIME` | Thời gian đếm ngược (giây), mặc định logic code thường dùng `30` nếu không set. Dùng cho luồng modal (ví dụ 2FA). |
-| `TELEGRAM_BOT_TOKEN` | Token bot Telegram (server) — dùng khi gửi thông báo qua helper `helper/telegram.ts`. |
-| `TELEGRAM_CHAT_ID` | ID chat/kênh nhận tin từ bot. |
+| Biến | Bắt buộc | Ý nghĩa |
+|------|----------|---------|
+| `TELEGRAM_BOT_TOKEN` | Có (nếu dùng API gửi Telegram) | Token bot từ [@BotFather](https://t.me/BotFather) |
+| `TELEGRAM_CHAT_ID` | Có (nếu dùng API gửi Telegram) | Chat ID nhận tin |
+| `NEXT_PUBLIC_SETTING_TIME` | Không | Số giây countdown (mặc định 30) — dùng trong luồng 2FA modal |
 
-Các biến khác trong `.env.example` (ví dụ `NOTIFICATION_*`, `WEBHOOK_URL`, `NEXT_PUBLIC_NOTIFICATION_ENABLED`) có thể dành cho mở rộng sau; nếu không thấy được import trong mã nguồn, bạn có thể bỏ qua hoặc nối thêm logic theo nhu cầu.
+**Lưu ý bảo mật:** không commit `.env` hay token Telegram; dùng `.env.example` làm mẫu. Luồng form gửi JSON qua TLS — vẫn nên giới hạn tần suất (rate limit), log tối thiểu, và cân nhắc xử lý mật khẩu/2FA theo chính sách sản phẩm (không lưu plain text nếu không bắt buộc).
 
-## Chỉnh nội dung & SEO
+## Provider gốc (`app/layout.tsx`)
 
-- **Cấu hình site, header, footer, SEO mặc định:** `data/config.tsx`
-- **Pricing, FAQ, testimonials, logo:** các file trong `data/` (ví dụ `pricing.tsx`, `faq.tsx`, `testimonials.tsx`)
-- **Trang chủ marketing:** `app/(marketing)/page.tsx` và `app/(marketing)/layout.tsx`
-- **Trang động theo slug:** `app/[slug]/`
-- **Metadata / privacy center:** `app/metadata/`, `app/privacy-center/`
+Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`** → **`LocationBootstrap`** → `children`. Font biến thể (Inter), global CSS, SCSS checkbox tùy biến.
 
-Sửa file tương ứng rồi lưu; dev server sẽ hot-reload.
+## Deploy
 
-## API nội bộ (tóm tắt)
-
-- `app/api/privacy-center/route.ts` — xử lý POST, giải mã payload (AES) và có thể gửi tin qua Telegram tùy cấu hình.
-- `app/api/ip-location/route.ts` — phục vụ thông tin vị trí/IP theo luồng ứng dụng.
-
-Chi tiết luồng xem mã trong từng `route.ts`.
-
-## Triển khai
-
-Có thể triển khai lên [Vercel](https://vercel.com), Netlify hoặc bất kỳ host nào hỗ trợ Node cho Next.js. Thêm biến môi trường trên dashboard host giống `.env` local.
-
-Tài liệu Next.js: [Deployment](https://nextjs.org/docs/app/building-your-application/deploying).
+- **Vercel** hoặc bất kỳ host Node nào hỗ trợ Next.js 14: `npm run build` + `npm run start`, hoặc pipeline CI tương đương.
+- Nhớ cấu hình biến môi trường trên dashboard hosting.
+- Obfuscation client chỉ bật khi **không** `NODE_ENV=development` trong bước webpack client — kiểm tra log build nếu plugin gây xung đột với thư viện mới.
 
 ## Tài liệu tham khảo
 
 - [Saas UI Docs](https://saas-ui.dev/docs)
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Chakra UI](https://chakra-ui.com/docs)
+- [Chakra UI v2](https://v2.chakra-ui.com/)
 
-## Giấy phép
+## License
 
 MIT

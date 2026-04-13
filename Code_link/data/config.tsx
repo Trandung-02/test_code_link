@@ -1,82 +1,89 @@
+import { Button } from '@chakra-ui/react'
 import { Link } from '@saas-ui/react'
 import { Metadata } from 'next'
 import { FaGithub, FaTwitter } from 'react-icons/fa'
 import { FiCheck } from 'react-icons/fi'
 import { Logo } from './logo'
-import { SITE_MAIN_MESSAGE } from './site-message'
 
 const siteConfig = {
   logo: Logo,
   seo: {
-    title: SITE_MAIN_MESSAGE,
-    description: SITE_MAIN_MESSAGE,
-  } as Metadata,
+    title: 'Saas UI',
+    description: 'The React component library for startups',} as Metadata,
   termsUrl: '#',
   privacyUrl: '#',
   header: {
     links: [
       {
         id: 'features',
-        label: 'Thông tin',
+        label: 'Features',
       },
       {
         id: 'pricing',
-        label: 'Nội dung',
+        label: 'Pricing',
       },
       {
         id: 'faq',
-        label: 'Hỏi đáp',
+        label: 'FAQ',
       },
       {
-        label: 'Đăng nhập',
+        label: 'Login',
         href: '#',
       },
       {
-        label: 'Tiếp tục',
+        label: 'Sign Up',
         href: '#',
         variant: 'primary',
       },
     ],
   },
   footer: {
-    copyright: <>{SITE_MAIN_MESSAGE}</>,
+    copyright: (
+      <>
+        Built by{' '}
+        <Link href="https://twitter.com/Pagebakers">Eelco Wiersma</Link>
+      </>
+    ),
     links: [
       {
-        href: '#',
-        label: 'Liên hệ',
+        href: 'mailto:hello@saas-ui.dev',
+        label: 'Contact',
       },
       {
-        href: '#',
+        href: 'https://twitter.com/saas_js',
         label: <FaTwitter size="14" />,
       },
       {
-        href: '#',
+        href: 'https://github.com/saas-js/saas-ui',
         label: <FaGithub size="14" />,
       },
     ],
   },
   signup: {
-    title: SITE_MAIN_MESSAGE,
+    title: 'Start building with Saas UI',
     features: [
       {
         icon: FiCheck,
-        title: SITE_MAIN_MESSAGE,
-        description: SITE_MAIN_MESSAGE,
+        title: 'Accessible',
+        description: 'All components strictly follow WAI-ARIA standards.',
       },
       {
         icon: FiCheck,
-        title: SITE_MAIN_MESSAGE,
-        description: SITE_MAIN_MESSAGE,
+        title: 'Themable',
+        description:
+          'Fully customize all components to your brand with theme support and style props.',
       },
       {
         icon: FiCheck,
-        title: SITE_MAIN_MESSAGE,
-        description: SITE_MAIN_MESSAGE,
+        title: 'Composable',
+        description:
+          'Compose components to fit your needs and mix them together to create new ones.',
       },
       {
         icon: FiCheck,
-        title: SITE_MAIN_MESSAGE,
-        description: SITE_MAIN_MESSAGE,
+        title: 'Productive',
+        description:
+          'Designed to reduce boilerplate and fully typed, build your product at speed.',
       },
     ],
   },

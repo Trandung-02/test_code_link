@@ -1,9 +1,11 @@
 import { extendTheme } from '@chakra-ui/react'
-import '@fontsource-variable/inter'
 import { theme as baseTheme } from '@saas-ui/react'
 
 import components from './components'
 import { fontSizes } from './foundations/typography'
+
+const uiStack =
+  'var(--font-optimistic), ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
 
 export const theme = extendTheme(
   {
@@ -16,7 +18,9 @@ export const theme = extendTheme(
         body: {
           color: 'gray.900',
           bg: 'white',
-          fontSize: 'lg',
+          fontFamily: uiStack,
+          fontSize: '1rem',
+          lineHeight: 1.5,
           _dark: {
             color: 'white',
             bg: 'gray.900',
@@ -25,8 +29,8 @@ export const theme = extendTheme(
       }),
     },
     fonts: {
-      heading: 'Inter Variable, Inter, sans-serif',
-      body: 'Inter Variable, Inter, sans-serif',
+      heading: uiStack,
+      body: uiStack,
     },
     fontSizes,
     components,

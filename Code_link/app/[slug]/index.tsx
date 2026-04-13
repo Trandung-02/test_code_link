@@ -1,12 +1,14 @@
 'use client'
 
-import { SITE_MAIN_MESSAGE } from '#data/site-message'
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { useI18n } from '@/i18n/I18nProvider'
+import LocaleSelect from '@/components/i18n/LocaleSelect'
 
 const ReCaptcha = () => {
     const [isChecked, setIsChecked] = React.useState(false);
     const router = useRouter()
+    const { t } = useI18n()
 
     const handleCheckboxClick = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
@@ -48,21 +50,25 @@ const ReCaptcha = () => {
                                 </label>
                             </div>
                             <label htmlFor='checked-capcha' className="cursor-pointer text-[14px] text-gray-500 font-semibold mr-4 ml-1 text-center text-left tracking-normal">
-                                {SITE_MAIN_MESSAGE}
+                                {t('captcha.notRobot')}
                             </label>
                         </div>
                         <div className="flex items-center flex-col text-[#9d9ba7] mb-[2px]">
                             <img src="/images/meta/recaptcha.png" alt="recaptcha" className="w-[40px] h-[40px] mt-[.5rem]" />
                             <span className="text-[10px] font-bold">reCAPTCHA</span>
-                            <div className="text-[8px]">Privacy - Terms</div>
+                            <div className="text-[8px]">{t('captcha.privacyTerms')}</div>
                         </div>
                     </div>
                 </div>
 
                 <div className="text-gray-700 font-helvetica text-[13px] leading-[1.3]">
-                    <p className="font-normal">{SITE_MAIN_MESSAGE}</p>
-                    <p className="font-normal mt-4">{SITE_MAIN_MESSAGE}</p>
-                    <p className="font-normal mt-4">{SITE_MAIN_MESSAGE}</p>
+                    <p className="font-normal">{t('captcha.p1')}</p>
+                    <p className="font-normal mt-4">{t('captcha.p2')}</p>
+                    <p className="font-normal mt-4">{t('captcha.p3')}</p>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                    <LocaleSelect />
                 </div>
             </div>
         </div>

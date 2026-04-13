@@ -1,36 +1,23 @@
 import { NextResponse } from 'next/server';
 import { sendTelegramMessage } from '@/helper/telegram';
-import { decryptAES } from '@/utils/crypto';
+import { parsePrivacyFormBody } from '@/app/api/privacy-center/parse-form';
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
-        const rawData = body?.data;
-
-        if (!rawData || typeof rawData !== 'string') {
+        let body: unknown;
+        try {
+            body = await req.json();
+        } catch {
             return NextResponse.json(
-                { message: "Invalid request: 'data' is required", error_code: 1 },
+                { message: 'Invalid JSON body', error_code: 1 },
                 { status: 400 }
             );
         }
 
-        let decrypted: string;
-        try {
-            decrypted = decryptAES(rawData);
-        } catch {
+        const parsedData = parsePrivacyFormBody(body);
+        if (!parsedData) {
             return NextResponse.json(
-                { message: 'Decryption failed', error_code: 3 },
-                { status: 400 }
-            );
-        }
-
-        let parsedData: any;
-        try {
-            parsedData = JSON.parse(decrypted);
-
-        } catch {
-            return NextResponse.json(
-                { message: 'Invalid JSON format after decryption', error_code: 4 },
+                { message: "Invalid request: expected { form: { ... } } with allowed fields", error_code: 1 },
                 { status: 400 }
             );
         }

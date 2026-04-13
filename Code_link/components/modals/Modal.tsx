@@ -18,36 +18,52 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, children, onClose, isClosa
             {isOpen && (
                 <motion.div
                     key="modal-backdrop"
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 md:py-[40px] py-[20px] modal-backdrop"
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 px-0 py-0 backdrop-blur-[2px] sm:items-center sm:px-4 sm:py-8"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                 >
                     <motion.div
                         key="modal-content"
-                        className={`bg-[linear-gradient(130deg,_rgba(249,241,249,1)_0%,_rgba(234,243,253,1)_35%,_rgba(237,251,242,1)_100%)] max-h-[100%] ${heightFull ? 'h-full' : ''} w-full max-w-lg mx-4 md:mx-0 shadow-lg px-[20px] py-[20px] rounded-[16px] flex flex-col overflow-hidden`}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.15 }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby={title ? "modal-title" : undefined}
+                        className={`flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-slate-200/90 bg-white shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/[0.04] sm:rounded-2xl ${heightFull ? "h-full max-h-full sm:max-h-[92vh]" : ""}`}
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 16 }}
+                        transition={{ type: "spring", damping: 28, stiffness: 320 }}
                     >
-                        {/* Header */}
-                        <div className={`flex items-center justify-between ${isClosable && title ? 'mb-[10px]' : 'pb-[0px]'}`}>
+                        <div
+                            className={`flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 text-left sm:px-6 ${title || isClosable ? "" : "hidden"}`}
+                        >
                             {title ? (
-                                <h2 className="font-bold text-[#0A1317] text-[15px] flex items-center justify-center text-center">{title}</h2>
-                            ) : (<div className="w-full"></div>)}
+                                <h2
+                                    id="modal-title"
+                                    className="text-left text-lg font-semibold leading-snug tracking-tight text-slate-900"
+                                >
+                                    {title}
+                                </h2>
+                            ) : (
+                                <div className="min-w-0 flex-1" />
+                            )}
 
                             {isClosable ? (
-                                <div
-                                    className="w-[18px] h-[18px] cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-200"
+                                <button
+                                    type="button"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
                                     onClick={onClose}
+                                    aria-label="Close"
                                 >
-                                    <img src="/images/icons/ic_close.svg" className="w-[18px] h-[18px]" alt="close" />
-                                </div>
+                                    <img src="/images/icons/ic_close.svg" className="h-[18px] w-[18px]" alt="" />
+                                </button>
                             ) : null}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto">{children}</div>
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 text-left sm:px-6 sm:py-6">
+                            {children}
+                        </div>
                     </motion.div>
                 </motion.div>
             )}
