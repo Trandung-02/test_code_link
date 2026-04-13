@@ -107,26 +107,14 @@ Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`
 
 ### Vercel (preset Next.js)
 
-Repo có file `vercel.json` (framework `nextjs`) và `package.json` khai báo `next` trong **dependencies**.
+**Cấu trúc monorepo (git root = thư mục cha của `Code_link`):** Ở gốc repo đã có `package.json` dùng **npm workspaces** (`workspaces: ["Code_link"]`), `vercel.json` và `package-lock.json`. Vercel chạy `npm install` + `npm run build` tại gốc — Next.js được cài qua workspace, build thực tế là `next build` trong `Code_link`. Hãy **commit và push** các file ở gốc repo (`package.json`, `package-lock.json`, `vercel.json`, `.gitignore`), rồi deploy lại.
 
-Nếu build báo **`No Next.js version detected`** hoặc **`Could not identify Next.js version`**:
+**Nếu build vẫn báo `No Next.js version detected`:**
 
-1. **Root Directory** — Trên Vercel: **Project → Settings → General → Root Directory** phải trỏ tới thư mục **chứa `package.json` của app** (ví dụ nếu trên GitHub cấu trúc là `test_code_link/Code_link/...` thì đặt Root Directory là `Code_link`). Lưu và **Redeploy**.
-2. **Xác minh trên GitHub** — Mở repo trên web, đảm bảo tại đúng thư mục đó có `package.json` và có dòng `"next": "..."`, đồng thời nên có `package-lock.json` (đã commit).
-3. **Không đặt Root Directory** trỏ vào thư mục cha chỉ có README mà không có `package.json` đầy đủ.
+1. Trên Vercel, để **Root Directory trống** (hoặc `./`) nếu bạn deploy cả repo có workspace như trên — **không** chỉnh thành `Code_link` khi đang dùng `package.json` workspace ở gốc.
+2. Hoặc bỏ workspace: đặt **Root Directory = `Code_link`** và chỉ cần `package.json` trong `Code_link` (khi đó có thể xóa `package.json` gốc nếu repo chỉ chứa app).
 
-Nếu bạn **cố tình** giữ `package.json` trong thư mục con mà không đổi Root Directory trên Vercel, có thể thêm `package.json` ở **gốc repo** (cùng cấp với thư mục app) với script build ủy quyền, ví dụ:
-
-```json
-{
-  "private": true,
-  "scripts": {
-    "vercel-build": "cd Code_link && npm ci && npm run build"
-  }
-}
-```
-
-Đổi `Code_link` thành đúng tên thư mục app của bạn; cài đặt Vercel dùng script `vercel-build` khi có (xem thông báo CLI trên log). Cách sạch nhất vẫn là chỉnh **Root Directory** cho khớp một lần.
+3. Xác minh trên GitHub: đúng nhánh `main` có file mà Vercel build (gốc hoặc `Code_link`) phải có `next` trong `dependencies`.
 
 ## Tài liệu tham khảo
 

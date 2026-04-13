@@ -1,0 +1,17 @@
+{
+  "name": "code-repo-root",
+  "private": true,
+  "description": "Gốc repo — app Next.js nằm trong Code_link (Vercel chạy npm install/build tại đây).",
+  "workspaces": [
+    "Code_link"
+  ],
+  "scripts": {
+    "build": "npm run build -w saas-ui-nextjs-landing-page",
+    "dev": "npm run dev -w saas-ui-nextjs-landing-page",
+    "start": "npm run start -w saas-ui-nextjs-landing-page",
+    "lint": "npm run lint -w saas-ui-nextjs-landing-page"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}
