@@ -107,14 +107,20 @@ Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`
 
 ### Vercel (preset Next.js)
 
-**Git root là thư mục cha của `Code_link`** (ví dụ repo có `Code_link/package.json`):
+**Git root là thư mục cha của `Code_link`** (repo có `Code_link/package.json` + `Code_link/package-lock.json`).
 
-- Ở **gốc repo** có `vercel.json` với `installCommand`: `cd Code_link && npm ci` và `buildCommand`: `cd Code_link && npm run build` — build và `package-lock.json` dùng **trong `Code_link`**.
-- Gốc chỉ có `package.json` tối giản (script `build`/`dev` gọi vào `Code_link`); **không** có `package-lock.json` ở gốc.
-- **Quan trọng:** trong Vercel → **Project → Settings → General → Root Directory** để **trống** hoặc `./`. **Không** đặt là `Code_link` (nếu đặt, lệnh `cd Code_link` trong `vercel.json` sẽ sai đường dẫn).
-- Commit `Code_link/package-lock.json` (bắt buộc cho `npm ci`).
+**Cách 1 — Root Directory trống (mặc định, khớp `vercel.json` gốc):**
 
-**Tuỳ chọn khác:** xóa `vercel.json` gốc, đặt Root Directory = `Code_link` và chỉ deploy từ app con (khi đó không cần `cd Code_link`).
+- Ở **gốc repo**, `vercel.json` dùng `npm ci --prefix Code_link` và `npm run build --prefix Code_link` (tránh `cd` trên môi trường build).
+- Trong Vercel → **Settings → General → Root Directory**: để **trống** hoặc `./`.
+- Gốc chỉ có `package.json` tối giản; **không** cần `package-lock.json` ở gốc.
+
+**Cách 2 — Root Directory = `Code_link`:**
+
+- Trong Vercel đặt **Root Directory** = `Code_link`.
+- **Xóa** (hoặc bỏ `installCommand` / `buildCommand` trong) `vercel.json` **ở gốc repo**, để Vercel chỉ chạy `npm ci` / `npm run build` trong thư mục app — nếu giữ lệnh `--prefix Code_link` khi root đã là `Code_link`, đường dẫn sẽ sai.
+
+Luôn commit `Code_link/package-lock.json` (bắt buộc cho `npm ci`).
 
 ## Tài liệu tham khảo
 

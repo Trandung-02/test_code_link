@@ -7,8 +7,5 @@
     "dev": "cd Code_link && npm run dev",
     "start": "cd Code_link && npm run start",
     "lint": "cd Code_link && npm run lint"
-  },
-  "engines": {
-    "node": ">=20"
   }
 }
