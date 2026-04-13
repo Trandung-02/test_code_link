@@ -107,18 +107,11 @@ Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`
 
 ### Vercel (preset Next.js)
 
-**Git root là thư mục cha của `Code_link`** (repo có `Code_link/package.json` + `Code_link/package-lock.json`).
+Repo có Next.js trong thư mục **`Code_link`** (`package.json` + `package-lock.json` nằm ở đó).
 
-**Cách 1 — Root Directory trống (mặc định, khớp `vercel.json` gốc):**
+**Bắt buộc trên Vercel:** **Project → Settings → General → Root Directory** = `Code_link` (đúng chữ hoa/thường như trong repo). File **`Code_link/vercel.json`** chỉ định `npm ci` và `npm run build` — chúng chạy trong thư mục root của project (tức `Code_link`), nên `package-lock.json` luôn được nhận đúng.
 
-- Ở **gốc repo**, `vercel.json` dùng `npm ci --prefix Code_link` và `npm run build --prefix Code_link` (tránh `cd` trên môi trường build).
-- Trong Vercel → **Settings → General → Root Directory**: để **trống** hoặc `./`.
-- Gốc chỉ có `package.json` tối giản; **không** cần `package-lock.json` ở gốc.
-
-**Cách 2 — Root Directory = `Code_link`:**
-
-- Trong Vercel đặt **Root Directory** = `Code_link`.
-- **Xóa** (hoặc bỏ `installCommand` / `buildCommand` trong) `vercel.json` **ở gốc repo**, để Vercel chỉ chạy `npm ci` / `npm run build` trong thư mục app — nếu giữ lệnh `--prefix Code_link` khi root đã là `Code_link`, đường dẫn sẽ sai.
+**Không** đặt Root Directory trống rồi cố cài bằng `npm ci --prefix Code_link` khi UI đã trỏ vào `Code_link`: hai cấu hình chồng nhau dễ khiến `npm ci` chạy nhầm chỗ và báo lỗi kiểu *npm-shrinkwrap / package-lock*.
 
 Luôn commit `Code_link/package-lock.json` (bắt buộc cho `npm ci`).
 
