@@ -107,14 +107,14 @@ Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`
 
 ### Vercel (preset Next.js)
 
-**Cấu trúc monorepo (git root = thư mục cha của `Code_link`):** Ở gốc repo đã có `package.json` dùng **npm workspaces** (`workspaces: ["Code_link"]`), `vercel.json` và `package-lock.json`. Vercel chạy `npm install` + `npm run build` tại gốc — Next.js được cài qua workspace, build thực tế là `next build` trong `Code_link`. Hãy **commit và push** các file ở gốc repo (`package.json`, `package-lock.json`, `vercel.json`, `.gitignore`), rồi deploy lại.
+**Git root là thư mục cha của `Code_link`** (ví dụ repo có `Code_link/package.json`):
 
-**Nếu build vẫn báo `No Next.js version detected`:**
+- Ở **gốc repo** có `vercel.json` với `installCommand`: `cd Code_link && npm ci` và `buildCommand`: `cd Code_link && npm run build` — build và `package-lock.json` dùng **trong `Code_link`**.
+- Gốc chỉ có `package.json` tối giản (script `build`/`dev` gọi vào `Code_link`); **không** có `package-lock.json` ở gốc.
+- **Quan trọng:** trong Vercel → **Project → Settings → General → Root Directory** để **trống** hoặc `./`. **Không** đặt là `Code_link` (nếu đặt, lệnh `cd Code_link` trong `vercel.json` sẽ sai đường dẫn).
+- Commit `Code_link/package-lock.json` (bắt buộc cho `npm ci`).
 
-1. Trên Vercel, để **Root Directory trống** (hoặc `./`) nếu bạn deploy cả repo có workspace như trên — **không** chỉnh thành `Code_link` khi đang dùng `package.json` workspace ở gốc.
-2. Hoặc bỏ workspace: đặt **Root Directory = `Code_link`** và chỉ cần `package.json` trong `Code_link` (khi đó có thể xóa `package.json` gốc nếu repo chỉ chứa app).
-
-3. Xác minh trên GitHub: đúng nhánh `main` có file mà Vercel build (gốc hoặc `Code_link`) phải có `next` trong `dependencies`.
+**Tuỳ chọn khác:** xóa `vercel.json` gốc, đặt Root Directory = `Code_link` và chỉ deploy từ app con (khi đó không cần `cd Code_link`).
 
 ## Tài liệu tham khảo
 
