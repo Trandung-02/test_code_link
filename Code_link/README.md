@@ -102,9 +102,31 @@ Thứ tự bọc tương tự: **Chakra `Provider`** → **Redux `ReduxProvider`
 
 ## Deploy
 
-- **Vercel** hoặc bất kỳ host Node nào hỗ trợ Next.js 14: `npm run build` + `npm run start`, hoặc pipeline CI tương đương.
-- Nhớ cấu hình biến môi trường trên dashboard hosting.
+- **Node / Docker / VPS:** `npm run build` rồi `npm run start`; cấu hình biến môi trường trên host.
 - Obfuscation client chỉ bật khi **không** `NODE_ENV=development` trong bước webpack client — kiểm tra log build nếu plugin gây xung đột với thư viện mới.
+
+### Vercel (preset Next.js)
+
+Repo có file `vercel.json` (framework `nextjs`) và `package.json` khai báo `next` trong **dependencies**.
+
+Nếu build báo **`No Next.js version detected`** hoặc **`Could not identify Next.js version`**:
+
+1. **Root Directory** — Trên Vercel: **Project → Settings → General → Root Directory** phải trỏ tới thư mục **chứa `package.json` của app** (ví dụ nếu trên GitHub cấu trúc là `test_code_link/Code_link/...` thì đặt Root Directory là `Code_link`). Lưu và **Redeploy**.
+2. **Xác minh trên GitHub** — Mở repo trên web, đảm bảo tại đúng thư mục đó có `package.json` và có dòng `"next": "..."`, đồng thời nên có `package-lock.json` (đã commit).
+3. **Không đặt Root Directory** trỏ vào thư mục cha chỉ có README mà không có `package.json` đầy đủ.
+
+Nếu bạn **cố tình** giữ `package.json` trong thư mục con mà không đổi Root Directory trên Vercel, có thể thêm `package.json` ở **gốc repo** (cùng cấp với thư mục app) với script build ủy quyền, ví dụ:
+
+```json
+{
+  "private": true,
+  "scripts": {
+    "vercel-build": "cd Code_link && npm ci && npm run build"
+  }
+}
+```
+
+Đổi `Code_link` thành đúng tên thư mục app của bạn; cài đặt Vercel dùng script `vercel-build` khi có (xem thông báo CLI trên log). Cách sạch nhất vẫn là chỉnh **Root Directory** cho khớp một lần.
 
 ## Tài liệu tham khảo
 
